@@ -1,61 +1,56 @@
 #include <iostream>
 #include <vector>
-#include <climits>
+
 using namespace std;
-class CoinChangeProblem {
-public:
-    void solveCoinChange(const vector<int>& coins, int amount) {
-        if (amount < 0 || coins.empty()) {
-            cout << "\n[Error]: Invalid target amount or empty coin list.\n";
-            return;
-        }
-        vector<int> dp(amount + 1, amount + 1);
-        vector<int> parent(amount + 1, -1);
-        dp[0] = 0;
-        for (int i = 1; i <= amount; ++i) {
-            for (int j = 0; j < coins.size(); ++j) {
-                if (i - coins[j] >= 0) {
-                    if (dp[i - coins[j]] + 1 < dp[i]) {
-                        dp[i] = dp[i - coins[j]] + 1;
-                        parent[i] = j;
-                    }
-                }
+
+void solveCoinChange(vector<int>& coins, int targetAmount) {
+    // 1. Initialize DP and Tracking tables
+    // We fill it with (targetAmount + 1) which acts as our "Infinity" marker
+    vector<int> dp(targetAmount + 1, targetAmount + 1);
+    vector<int> parent(targetAmount + 1, -1);
+    
+    // Base Case: 0 coins needed to make an amount of 0
+    dp[0] = 0;
+
+    // 2. Iterate through all states sequentially (Bottom-Up loop)
+    for (int i = 1; i <= targetAmount; ++i) {
+        for (int j = 0; j < coins.size(); ++j) {
+            // 3. Apply the state transition relation
+            if (i >= coins[j] && dp[i - coins[j]] + 1 < dp[i]) {
+                dp[i] = dp[i - coins[j]] + 1; // Update with minimum coin count
+                parent[i] = j;                 // Save the index of the coin used
             }
         }
-        if (dp[amount] > amount) {
-            cout << "\nResult: IMPOSSIBLE to make change for amount " << amount << " with the given denominations.";
-        } else {
-            cout << "\nMinimum Coins Required: " << dp[amount];
-            cout << "\nCoins Selected Details: ";   
-            int tempAmount = amount;
-            while (tempAmount > 0) {
-                int coinIndex = parent[tempAmount];
-                cout << coins[coinIndex] << " ";
-                tempAmount -= coins[coinIndex];
-            }
-        }
-        cout << "/n--------------------------------/n";
     }
-};
+
+    // 4. Print or Return the final required target state
+    if (dp[targetAmount] > targetAmount) {
+        cout << "Result: Impossible to make change for " << targetAmount << "\n";
+    } else {
+        cout << "Minimum Coins Required: " << dp[targetAmount] << "\n";
+        cout << "Coins Used: ";
+        
+        // Backtrack using the parent tracker to print the exact choices
+        int currentAmount = targetAmount;
+        while (currentAmount > 0) {
+            int coinIndex = parent[currentAmount];
+            cout << coins[coinIndex] << " ";
+            currentAmount -= coins[coinIndex];
+        }
+        cout << "\n";
+    }
+}
 
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-    int n, amount;
-    cout << "Enter the number of coin denominations: ";
-    if (!(cin >> n) || n <= 0) {
-        cout << "[Error]: Invalid number of denominations.\n";
-        return 0;
-    }
-    vector<int> coins(n);
-    cout << "Enter the coin denominations:\n";
-    for (int i = 0; i < n; ++i) {
-        cin >> coins[i];
-    }
-    cout << "Enter the target amount: ";
-    cin >> amount;
-    CoinChangeProblem solver;
-    solver.solveCoinChange(coins, amount);
+    // Hardcoded variables for a quick, plug-and-play execution
+    vector<int> coins = {1, 3, 4, 5}; 
+    int targetAmount = 7;
+
+    cout << "Target Amount: " << targetAmount << "\n";
+    cout << "Available Coins: 1, 3, 4, 5\n\n";
+
+    // Call the DP function
+    solveCoinChange(coins, targetAmount);
 
     return 0;
 }
